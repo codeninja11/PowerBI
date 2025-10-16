@@ -1,0 +1,50 @@
+[
+  {
+    "Metric": "Shop GMV",
+    "Metric Current": 110000000,
+    "Metric Previous": 13000000,
+    "Order": 1
+  },
+  {
+    "Metric": "T.GMV",
+    "Metric Current": 87000000,
+    "Metric Previous": 10650000,
+    "Order": 2
+  },
+  {
+    "Metric": "T.Spend",
+    "Metric Current": 14000000,
+    "Metric Previous": 1435000,
+    "Order": 3
+  },
+  {
+    "Metric": "Paid GMV Cont",
+    "Metric Current": 0.7749,
+    "Metric Previous": 0.6709,
+    "Order": 4
+  },
+  {
+    "Metric": "ROAS",
+    "Metric Current": 6.37,
+    "Metric Previous": 7.61,
+    "Order": 5
+  },
+  {
+    "Metric": "Shop ROI",
+    "Metric Current": 8.22,
+    "Metric Previous": 1.09,
+    "Order": 6
+  },
+  {
+    "Metric": "CIR",
+    "Metric Current": 0.1217,
+    "Metric Previous": 0.0882,
+    "Order": 7
+  },
+  {
+    "Metric": "Shop CR%",
+    "Metric Current": 0.0155,
+    "Metric Previous": 0.0146,
+    "Order": 8
+  }
+]

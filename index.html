@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Vega-Lite Metric Panel (Preview)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    .hint { color: #555; margin-bottom: 16px; }
+    #vis { border: 1px solid #eee; padding: 16px; border-radius: 12px; }
+    pre { background: #f7f7f7; padding: 12px; overflow: auto; border-radius: 8px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>Vega‑Lite Metric Panel — Preview</h1>
+  <p class="hint">This page renders <code>metric-panel.vegalite.json</code> using <code>sample-data.json</code>. Edit one or both and refresh.</p>
+  <div id="vis"></div>
+  <details>
+    <summary>How to use this in your project</summary>
+    <pre><code>
+// Pass your own dataset when embedding:
+vegaEmbed('#el', spec, { datasets: { dataset: myArray } });
+    </code></pre>
+  </details>
+</div>
+<script>
+(async function() {
+  const spec = await fetch('metric-panel.vegalite.json').then(r => r.json());
+  const data = await fetch('sample-data.json').then(r => r.json());
+  await vegaEmbed('#vis', spec, { actions: false, renderer: 'canvas', datasets: { dataset: data }});
+})();
+</script>
+</body>
+</html>
