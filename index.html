@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Vega-Lite Metric Panel (Preview)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    .hint { color: #555; margin-bottom: 16px; }
+    #vis { border: 1px solid #eee; padding: 16px; border-radius: 12px; }
+    pre { background: #f7f7f7; padding: 12px; overflow: auto; border-radius: 8px; }
+    a { color: inherit; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>Vega-Lite Metric Panel — Preview</h1>
+  <p class="hint">
+    This page renders <code>metric-panel.vegalite.json</code> using <code>sample-data.json</code> when hosted.
+    If opened locally via <code>file://</code>, it falls back to the embedded spec and data below.
+  </p>
+  <div id="vis"></div>
+  <details>
+    <summary>How to use this in your project</summary>
+    <pre><code>
+// Host scenario (GitHub Pages, any server):
+//   vegaEmbed('#el', spec, { datasets: { dataset: myArray } });
+
+// Local scenario (file://):
+//   This page auto-embeds a working spec+data fallback.
+    </code></pre>
+  </details>
+</div>
+
+<!-- Embedded FALLBACK (used only when fetch is blocked or files are missing) -->
+<script id="fallback-spec" type="application/json">
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Two-row metric panel: Row1 Current (large), Row2 Change (%.2 | ±K/M/B), with bold row labels on the left.",
+  "hconcat": [
+    {
+      "data": { "values": [ { "Row": "Current" }, { "Row": "Change" } ] },
+      "width": 90,
+      "height": 80,
+      "mark": { "type": "text", "align": "left", "baseline": "middle", "fontWeight": "bold", "color": "black" },
+      "encoding": {
+        "y": { "field": "Row", "type": "ordinal", "sort": ["Current","Change"], "axis": null },
+        "x": { "value": 0 },
+        "text": { "field": "Row" },
+        "size": {
+          "condition": [
+            { "test": "datum.Row === 'Current'", "value": 22 },
+            { "test": "datum.Row === 'Change'",  "value": 14 }
+          ],
+          "value": 14
+        }
+      }
+    },
+    {
+      "data": { "name": "dataset" },
+      "width": { "step": 140 },
+      "height": 80,
+      "transform": [
+        { "calculate": "toNumber(datum['Metric Current'])",  "as": "Current" },
+        { "calculate": "toNumber(datum['Metric Previous'])", "as": "Previous" },
+        { "calculate": "datum.Previous != null && datum.Previous != 0 ? (datum.Current - datum.Previous) / datum.Previous : null", "as": "PctChange" },
+        { "calculate": "datum.Current - datum.Previous", "as": "AbsChange" },
+
+        { "calculate": "indexof(['Shop GMV','T.GMV','T.Spend'], datum.Metric) >= 0", "as": "IsMoney" },
+        { "calculate": "indexof(['Shop CR%','Paid GMV Cont','CIR'], datum.Metric) >= 0", "as": "IsPercentMetric" },
+        { "calculate": "indexof(['ROAS','Shop ROI'], datum.Metric) >= 0", "as": "IsRatioMetric" },
+
+        { "calculate": "datum.IsPercentMetric ? format(datum.Current, '.2%') : (datum.IsRatioMetric ? format(datum.Current, '.2f') : replace(replace(format(datum.Current, '.2s'),'k','K'),'G','B'))", "as": "CurrentCore" },
+        { "calculate": "datum.IsMoney ? '฿' + datum.CurrentCore : datum.CurrentCore", "as": "CurrentText" },
+
+        { "calculate": "isValid(datum.PctChange) ? format(datum.PctChange, '+.2%') : '—'", "as": "PctText" },
+        { "calculate": "datum.AbsChange >= 0 ? '+' : '-'", "as": "Sign" },
+        { "calculate": "replace(replace(format(abs(datum.AbsChange), '.2s'),'k','K'),'G','B')", "as": "MoneyCore" },
+        { "calculate": "datum.Sign + '฿' + datum.MoneyCore", "as": "MoneyText" },
+        { "calculate": "datum.IsPercentMetric ? format(datum.AbsChange, '+.2%') : (datum.IsRatioMetric ? format(datum.AbsChange, '+.2f') : datum.MoneyText)", "as": "AbsText" },
+        { "calculate": "datum.PctText + ' | ' + datum.AbsText", "as": "ChangeText" },
+
+        { "calculate": "isValid(datum.PctChange) && datum.PctChange < 0 ? '#e44' : '#008000'", "as": "ChangeColor" }
+      ],
+      "layer": [
+        {
+          "mark": { "type": "text", "align": "center", "baseline": "middle", "fontWeight": "bold", "fontSize": 22 },
+          "transform": [ { "calculate": "'Current'", "as": "Row" } ],
+          "encoding": {
+            "x": {
+              "field": "Metric",
+              "type": "ordinal",
+              "sort": { "field": "Order", "order": "ascending" },
+              "axis": { "orient": "top",  "title": null, "labelAngle": 0, "labelFontWeight": "bold", "labelLimit": 140 }
+            },
+            "y": { "field": "Row", "type": "ordinal", "sort": ["Current","Change"], "axis": null },
+            "text": { "field": "CurrentText" },
+            "color": { "value": "black" }
+          }
+        },
+        {
+          "mark": { "type": "text", "align": "center", "baseline": "middle", "fontSize": 14 },
+          "transform": [ { "calculate": "'Change'", "as": "Row" } ],
+          "encoding": {
+            "x": { "field": "Metric", "type": "ordinal", "sort": { "field": "Order", "order": "ascending" } },
+            "y": { "field": "Row", "type": "ordinal", "sort": ["Current","Change"], "axis": null },
+            "text": { "field": "ChangeText" },
+            "color": { "field": "ChangeColor", "scale": null }
+          }
+        }
+      ]
+    }
+  ],
+  "resolve": { "scale": { "y": "shared" } },
+  "config": {
+    "view": { "stroke": "transparent" },
+    "axis": { "domain": false, "ticks": false, "grid": false }
+  }
+}
+</script>
+
+<script id="fallback-data" type="application/json">
+[
+  {"Metric":"Shop GMV","Metric Current":110000000,"Metric Previous":13000000,"Order":1},
+  {"Metric":"T.GMV","Metric Current":87000000,"Metric Previous":10650000,"Order":2},
+  {"Metric":"T.Spend","Metric Current":14000000,"Metric Previous":1435000,"Order":3},
+  {"Metric":"Paid GMV Cont","Metric Current":0.7749,"Metric Previous":0.6709,"Order":4},
+  {"Metric":"ROAS","Metric Current":6.37,"Metric Previous":7.61,"Order":5},
+  {"Metric":"Shop ROI","Metric Current":8.22,"Metric Previous":1.09,"Order":6},
+  {"Metric":"CIR","Metric Current":0.1217,"Metric Previous":0.0882,"Order":7},
+  {"Metric":"Shop CR%","Metric Current":0.0155,"Metric Previous":0.0146,"Order":8}
+]
+</script>
+
+<script>
+(async function () {
+  let spec = null, data = null;
+
+  // Try hosted files first (works on GitHub Pages or any server)
+  try {
+    if (location.protocol !== 'file:') {
+      spec = await fetch('metric-panel.vegalite.json').then(r => r.json());
+      data = await fetch('sample-data.json').then(r => r.json());
+    }
+  } catch (_) {}
+
+  // Fallback for file:// or missing files
+  if (!spec || !data) {
+    spec = JSON.parse(document.getElementById('fallback-spec').textContent);
+    data = JSON.parse(document.getElementById('fallback-data').textContent);
+  }
+
+  vegaEmbed('#vis', spec, { actions: false, renderer: 'canvas', datasets: { dataset: data } });
+})();
+</script>
+</body>
+</html>
